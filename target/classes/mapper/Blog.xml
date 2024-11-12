@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.BlogMapper">
+    <!--  更新博客  -->
+    <update id="updateById" parameterType="com.example.entity.Blog">
+        update t_blog
+        <set>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            <if test="descr != null">
+                descr = #{descr},
+            </if>
+            <if test="cover != null">
+                cover = #{cover},
+            </if>
+            <if test="tags != null">
+                tags = #{tags},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="date != null">
+                date = #{date},
+            </if>
+            <if test="readCount != null">
+                read_count = #{readCount},
+            </if>
+            <if test="categoryId != null">
+                category_id = #{categoryId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 根据分类ID查询 -->
+    <select id="findByCategoryId" resultType="com.example.entity.Blog">
+        select
+        t_blog.*
+        from t_blog
+        <where>
+            <if test="categoryId != null">and t_blog.category_id = #{categoryId}</if>
+            and t_blog.id != #{id} and t_blog.status = '审核通过'
+        </where>
+    </select>
+
+    <!-- 根据博客ID查询 -->
+    <select id="findById" resultType="com.example.entity.Blog" parameterType="com.example.entity.Blog">
+        select
+        t_blog.*,t_user.username as userName
+        from t_blog
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            <if test="id != null">and t_blog.id = #{id}</if>
+        </where>
+    </select>
+
+    <!--  查询所有博客  -->
+    <select id="selectAll" resultType="com.example.entity.Blog">
+        select
+        t_blog.*, t_category.name as categoryName, t_user.username as userName
+        from t_blog
+        left join t_category
+        on t_blog.category_id = t_category.id
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            <if test="title != null">and t_blog.title like concat('%', #{title}, '%')</if>
+            <if test="categoryName != null">and t_category.name like concat('%', #{categoryName}, '%')</if>
+            <if test="userName != null">and t_user.username like concat('%', #{userName}, '%')</if>
+            <if test="userId != null">and t_blog.user_id = #{userId}</if>
+        </where>
+        order by id
+    </select>
+
+    <!--  查询已审核过的博客  -->
+    <select id="selectAudit" resultType="com.example.entity.Blog">
+        select
+        t_blog.*, t_category.name as categoryName, t_user.username as userName
+        from t_blog
+        left join t_category
+        on t_blog.category_id = t_category.id
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            <if test="title != null">and t_blog.title like concat('%', #{title}, '%')</if>
+            <if test="categoryName != null">and t_category.name like concat('%', #{categoryName}, '%')</if>
+            <if test="userName != null">and t_user.username like concat('%', #{userName}, '%')</if>
+            <if test="userId != null">and t_blog.user_id = #{userId}</if>
+            and t_blog.status = '审核通过'
+        </where>
+        order by id
+    </select>
+
+    <!--  查询所有博客并根据浏览量排序  -->
+    <select id="selectAllByReadCount" resultType="com.example.entity.Blog">
+        select
+        t_blog.*, t_category.name as categoryName, t_user.username as userName
+        from t_blog
+        left join t_category
+        on t_blog.category_id = t_category.id
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            <if test="title != null">and t_blog.title like concat('%', #{title}, '%')</if>
+            <if test="categoryName != null">and t_category.name like concat('%', #{categoryName}, '%')</if>
+            <if test="userName != null">and t_user.username like concat('%', #{userName}, '%')</if>
+            <if test="userId != null">and t_blog.user_id = #{userId}</if>
+        </where>
+        order by read_count desc
+    </select>
+
+    <!--  查询所有博客并根据发布时间排序  -->
+    <select id="selectAllByDate" resultType="com.example.entity.Blog">
+        select
+        t_blog.*, t_category.name as categoryName, t_user.username as userName
+        from t_blog
+        left join t_category
+        on t_blog.category_id = t_category.id
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            <if test="title != null">and t_blog.title like concat('%', #{title}, '%')</if>
+            <if test="categoryName != null">and t_category.name like concat('%', #{categoryName}, '%')</if>
+            <if test="userName != null">and t_user.username like concat('%', #{userName}, '%')</if>
+            <if test="userId != null">and t_blog.user_id = #{userId}</if>
+        </where>
+        order by t_blog.date desc
+    </select>
+
+    <!--  查询点赞过的博客  -->
+    <select id="selectLike" resultType="com.example.entity.Blog" parameterType="com.example.entity.Blog">
+        select t_blog.*, t_user.username as userName
+        from likes
+        left join t_blog
+        on likes.fid = t_blog.id
+        left join t_category
+        on t_blog.category_id = t_category.id
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            and likes.module = '博客'
+            <if test="title != null">and t_blog.title like concat('%', #{title}, '%')</if>
+            <if test="categoryName != null">and t_category.name like concat('%', #{categoryName}, '%')</if>
+            <if test="userName != null">and t_user.name like concat('%', #{userName}, '%')</if>
+            <if test="userId != null">and likes.user_id = #{userId}</if>
+        </where>
+        order by id desc
+    </select>
+
+    <!--  查询收藏过的博客  -->
+    <select id="selectCollect" resultType="com.example.entity.Blog" parameterType="com.example.entity.Blog">
+        select t_blog.*, t_user.username as userName
+        from collect
+        left join t_blog
+        on collect.fid = t_blog.id
+        left join t_category
+        on t_blog.category_id = t_category.id
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            and collect.module = '博客'
+            <if test="title != null">and t_blog.title like concat('%', #{title}, '%')</if>
+            <if test="categoryName != null">and t_category.name like concat('%', #{categoryName}, '%')</if>
+            <if test="userName != null">and t_user.name like concat('%', #{userName}, '%')</if>
+            <if test="userId != null">and collect.user_id = #{userId}</if>
+        </where>
+        order by id desc
+    </select>
+
+    <!--  查询评论过的博客  -->
+    <select id="selectComment" resultType="com.example.entity.Blog" parameterType="com.example.entity.Blog">
+        select t_blog.*, t_user.username as userName
+        from t_comment
+        left join t_blog
+        on t_comment.fid = t_blog.id
+        left join t_category
+        on t_blog.category_id = t_category.id
+        left join t_user
+        on t_blog.user_id = t_user.id
+        <where>
+            and t_comment.module = '博客'
+            <if test="title != null">and t_blog.title like concat('%', #{title}, '%')</if>
+            <if test="categoryName != null">and t_category.name like concat('%', #{categoryName}, '%')</if>
+            <if test="userName != null">and t_user.name like concat('%', #{userName}, '%')</if>
+            <if test="userId != null">and t_comment.user_id = #{userId}</if>
+        </where>
+        group by t_comment.fid , t_comment.module
+        order by id desc
+    </select>
+
+
+</mapper>
